@@ -1,0 +1,89 @@
+{
+  "type": "collection.insomnia.rest/5.0",
+  "schema_version": "5.1",
+  "name": "My first collection",
+  "meta": {
+    "id": "wrk_e1ff4b9d9cf84803994a82e6625d1ebd",
+    "created": 1762878204251,
+    "modified": 1770137294993,
+    "description": ""
+  },
+  "collection": [
+    {
+      "name": "POO ",
+      "meta": {
+        "id": "fld_85e5529549944957aff767b9a7523b87",
+        "created": 1774964459893,
+        "modified": 1774977757221,
+        "sortKey": -1774964459893,
+        "description": ""
+      },
+      "children": [
+        {
+          "url": "http://localhost:8000/categorias",
+          "name": "categoria",
+          "method": "POST",
+          "body": {
+            "mimeType": "application/json",
+            "text": "{\n\t\"nome\": \"Celular\",\n\t\"descricao\" : \"telefones legais\"\n}"
+          }
+        },
+        {
+          "url": "http://localhost:8000/categorias",
+          "name": "categoria",
+          "method": "GET"
+        },
+        {
+          "url": "http://localhost:8000/categorias/3",
+          "name": "categoria",
+          "method": "PUT",
+          "body": {
+            "mimeType": "application/json",
+            "text": "{\n\t\"nome\" : \"aparelhos moveis\",\n\t\"descricao\" : null\n}"
+          }
+        },
+        {
+          "url": "http://localhost:8000/categorias/2",
+          "name": "categoria",
+          "method": "DELETE"
+        },
+        {
+          "url": "http://localhost:8000/produtos/2",
+          "name": "produto",
+          "method": "DELETE"
+        },
+        {
+          "url": "http://localhost:8000/produtos/2",
+          "name": "produto",
+          "method": "PUT",
+          "body": {
+            "mimeType": "multipart/form-data",
+            "params": [
+              { "name": "idCategoria", "value": "18" },
+              { "name": "nome", "value": "iphone 15 pro max" },
+              { "name": "valor", "value": "8500" }
+            ]
+          }
+        },
+        {
+          "url": "http://localhost:8000/produtos",
+          "name": "produto",
+          "method": "POST",
+          "body": {
+            "mimeType": "multipart/form-data",
+            "params": [
+              { "name": "idCategoria", "value": "18" },
+              { "name": "nome", "value": "iphone" },
+              { "name": "valor", "value": "12000" }
+            ]
+          }
+        },
+        {
+          "url": "http://localhost:8000/produtos",
+          "name": "produto",
+          "method": "GET"
+        }
+      ]
+    }
+  ]
+}
