@@ -1,53 +1,56 @@
-﻿import { Connection } from "mysql2";
-import { connection } from "../config/Database.js";
+﻿import { connection } from "../config/Database.js";
 
 const clienteRepository = {
 
-    criar: async (cliente, telefone, endereco) => {
+    criar: async (cliente, telefones, endereco) => {
         const conn = await connection.getConnection();
+
         try {
             await conn.beginTransaction();
 
             // Cliente
-            const sqlCli = "INSERT INTO clientes(nome, cpf) VALUES (?,?)";
-            const valuesCli = [cliente.nome, cliente.cpf];
-            const [rowsCli] = await conn.execute(sqlCli, valuesCli);
+            const [resCli] = await conn.execute(
+                "INSERT INTO clientes(nome, cpf) VALUES (?, ?)",
+                [cliente.nome, cliente.cpf]
+            );
 
-            // Telefone
-            const sqlTel = "INSERT INTO telefones(idCliente, Telefone) VALUES (?,?)";
-            const valuesTel = [rowsCli.insertId, telefone.telefone];
-            const [rowsTel] = await conn.execute(sqlTel, valuesTel);
+            const idCliente = resCli.insertId;
+
+            // Telefones (vários)
+            for (const tel of telefones) {
+                await conn.execute(
+                    "INSERT INTO telefones(idCliente, telefone) VALUES (?, ?)",
+                    [idCliente, tel]
+                );
+            }
 
             // Endereço
-            const sqlEnd = `
-            INSERT INTO enderecos(idCliente, complemento, bairro, cidade, uf, cep, numero, logradouro)
-            VALUES (?,?,?,?,?,?,?,?)
-            `;
-            const valuesEnd = [
-                rowsCli.insertId,
-                endereco.complemento,
-                endereco.bairro,
-                endereco.cidade,
-                endereco.uf,
-                endereco.cep,
-                endereco.numero,
-                endereco.logradouro
-            ];
-            const [rowsEnd] = await conn.execute(sqlEnd, valuesEnd);
+            await conn.execute(
+                `INSERT INTO enderecos(idCliente, complemento, bairro, cidade, uf, cep, numero, logradouro)
+                 VALUES (?,?,?,?,?,?,?,?)`,
+                [
+                    idCliente,
+                    endereco.complemento,
+                    endereco.bairro,
+                    endereco.cidade,
+                    endereco.uf,
+                    endereco.cep,
+                    endereco.numero,
+                    endereco.logradouro
+                ]
+            );
 
-            await conn.commit(); 
+            await conn.commit();
 
-            return { rowsCli, rowsTel, rowsEnd };
+            return { idCliente };
 
         } catch (error) {
             await conn.rollback();
-            console.error("Erro ao criar cliente", error);
             throw error;
         } finally {
             conn.release();
         }
     },
-
 
     editar: async (id, dados) => {
         const conn = await connection.getConnection();
@@ -55,15 +58,17 @@ const clienteRepository = {
         try {
             await conn.beginTransaction();
 
-            await connection.execute(
-                'UPDATE clientes SET nome = ?, cpf = ? WHERE id = ?',
+            // Cliente
+            await conn.execute(
+                "UPDATE clientes SET nome = ?, cpf = ? WHERE id = ?",
                 [dados.nome, dados.cpf, id]
             );
 
+            // Endereço
             await conn.execute(
                 `UPDATE enderecos 
-                 SET Cep=?, Uf=?, Cidade=?, Bairro=?, Logradouro=?, Numero=?, Complemento=? 
-                 WHERE IdCliente=?`,
+                 SET cep=?, uf=?, cidade=?, bairro=?, logradouro=?, numero=?, complemento=? 
+                 WHERE idCliente=?`,
                 [
                     dados.cep,
                     dados.uf,
@@ -76,93 +81,80 @@ const clienteRepository = {
                 ]
             );
 
+            // Telefones (remove e recria)
             await conn.execute(
-                'UPDATE telefones SET telefone=? WHERE IdCliente = ?',
+                "DELETE FROM telefones WHERE idCliente = ?",
                 [id]
             );
 
-            if (dados.telefones && dados.telefones.length > 0) {
-                for (const telefone of dados.telefones) {
-                    await conn.execute(
-                        `INSERT INTO telefones (IdCliente, Telefone) VALUES (?, ?)`,
-                        [id, telefone]
-                    );
-                }
+            for (const tel of dados.telefones) {
+                await conn.execute(
+                    "INSERT INTO telefones(idCliente, telefone) VALUES (?, ?)",
+                    [id, tel]
+                );
             }
 
             await conn.commit();
-            conn.release();
 
-            return { message: "Cliente atualizado com sucesso" };
+            return { id };
 
         } catch (error) {
             await conn.rollback();
-            conn.release();
-            console.error("Erro ao editar cliente:", error);
             throw error;
-        } finally{
+        } finally {
             conn.release();
         }
     },
 
-   deletar: async (id) => {
+    deletar: async (id) => {
         const conn = await connection.getConnection();
 
         try {
-             conn.beginTransaction();
+            await conn.beginTransaction();
 
-             const sqlEnd = 'DELETE FROM enderecos WHERE idCliente = ?';
-             const [rowEnd] = await conn.execute(sqlEnd, [id]);
-
-             const sqlTel = 'DELETE FROM telefones WHERE idCliente = ?'
-             const [rowTel] = await conn.execute(sqlTel, [id]);
-
-            const sqlCli = 'DELETE FROM clientes WHERE id = ?'
-            const [rowCli] = await conn.execute(sqlCli, [id]);
+            await conn.execute("DELETE FROM telefones WHERE idCliente = ?", [id]);
+            await conn.execute("DELETE FROM enderecos WHERE idCliente = ?", [id]);
+            await conn.execute("DELETE FROM clientes WHERE id = ?", [id]);
 
             await conn.commit();
 
-            return {rowCli, rowEnd, rowTel};
+            return { id };
 
         } catch (error) {
             await conn.rollback();
             throw error;
+        } finally {
+            conn.release();
         }
-        finally{
-            conn.release()
-        }
-       
     },
 
     selecionar: async () => {
-    try {
-        const [rows] = await connection.execute(`
-            SELECT 
-                c.id,
-                c.nome,
-                c.cpf,
-                e.cep,
-                e.uf,
-                e.cidade,
-                e.bairro,
-                e.complemento,
-                e.logradouro,
-                e.numero,
-                t.telefone
-            FROM clientes c
-            LEFT JOIN enderecos e ON e.idCliente = c.id
-            LEFT JOIN telefones t ON t.idCliente = c.id
-            ORDER BY c.id DESC
-        `);
+        try {
+            const [rows] = await connection.execute(`
+                SELECT 
+                    c.id,
+                    c.nome,
+                    c.cpf,
+                    e.cep,
+                    e.uf,
+                    e.cidade,
+                    e.bairro,
+                    e.complemento,
+                    e.logradouro,
+                    e.numero,
+                    t.telefone
+                FROM clientes c
+                LEFT JOIN enderecos e ON e.idCliente = c.id
+                LEFT JOIN telefones t ON t.idCliente = c.id
+                ORDER BY c.id DESC
+            `);
 
-        return rows;
+            return rows;
 
-    } catch (error) {
-        console.error("Erro ao buscar clientes:", error);
-        throw error;
+        } catch (error) {
+            throw error;
+        }
     }
-}
-
-}
+};
 
 export default clienteRepository;
