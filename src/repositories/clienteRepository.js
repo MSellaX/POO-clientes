@@ -77,7 +77,7 @@ const clienteRepository = {
             );
 
             await conn.execute(
-                'DELETE FROM telefones WHERE IdCliente = ?',
+                'UPDATE telefones SET telefone=? WHERE IdCliente = ?',
                 [id]
             );
 
