@@ -132,20 +132,10 @@ const clienteRepository = {
         try {
             const [rows] = await connection.execute(`
                 SELECT 
-                    c.id,
-                    c.nome,
-                    c.cpf,
-                    e.cep,
-                    e.uf,
-                    e.cidade,
-                    e.bairro,
-                    e.complemento,
-                    e.logradouro,
-                    e.numero,
-                    t.telefone
+                    *
                 FROM clientes c
-                LEFT JOIN enderecos e ON e.idCliente = c.id
-                LEFT JOIN telefones t ON t.idCliente = c.id
+                INNER JOIN enderecos e ON e.idCliente = c.id
+                INNER JOIN telefones t ON t.idCliente = c.id
                 ORDER BY c.id DESC
             `);
 
