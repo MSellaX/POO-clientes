@@ -105,27 +105,33 @@ const clienteRepository = {
         }
     },
 
-    deletar: async (id) => {
+   deletar: async (id) => {
         const conn = await connection.getConnection();
 
         try {
+             conn.beginTransaction();
 
-            await conn.execute(
-                'DELETE FROM clientes WHERE id = ?',
-                [id]
-            );
+             const sqlEnd = 'DELETE FROM enderecos WHERE idCliente = ?';
+             const [rowEnd] = await conn.execute(sqlEnd, [id]);
+
+             const sqlTel = 'DELETE FROM telefones WHERE idCliente = ?'
+             const [rowTel] = await conn.execute(sqlTel, [id]);
+
+            const sqlCli = 'DELETE FROM clientes WHERE id = ?'
+            const [rowCli] = await conn.execute(sqlCli, [id]);
 
             await conn.commit();
-            conn.release();
 
-            return { message: "Cliente deletado com sucesso" };
+            return {rowCli, rowEnd, rowTel};
 
         } catch (error) {
             await conn.rollback();
-            conn.release();
-            console.error("Erro ao deletar cliente:", error);
             throw error;
         }
+        finally{
+            conn.release()
+        }
+       
     },
 
     selecionar: async () => {

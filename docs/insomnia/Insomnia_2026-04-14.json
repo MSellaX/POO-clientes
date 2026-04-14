@@ -1,0 +1,65 @@
+{
+  "type": "collection.insomnia.rest/5.0",
+  "schema_version": "5.1",
+  "name": "My first collection",
+  "meta": {
+    "id": "wrk_9466b5f9a7a246afa23835b9ac179f0b",
+    "created": 1775586361993,
+    "modified": 1775586361993,
+    "description": ""
+  },
+  "collection": [
+    {
+      "url": "http://localhost:8000/cliente",
+      "name": "get",
+      "method": "GET",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"João\",\n  \"cpf\": \"12345678909\",\n  \"cep\": \"13010000\",\n  \"numero\": \"123\",\n  \"complemento\": \"Casa\",\n  \"telefones\": [\n    \"11999999999\"\n  ]\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/12.5.0" }
+      ]
+    },
+    {
+      "url": "http://localhost:8000/cliente",
+      "name": "create",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"miguel sella prado\",\n  \"cpf\": \"12345678900\",\n  \"cep\": \"13180500\",\n  \"numero\": \"123\",\n  \"complemento\": \"Casa\",\n  \"telefone\": \"19991098805\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/12.5.0" }
+      ]
+    },
+    {
+      "url": "http://localhost:8000/cliente/5",
+      "name": "edit",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Miguel S P\",\n  \"cpf\": \"12345678909\",\n  \"telefones\": [\n    \"19999999999\",\n    \"19988888888\"\n  ],\n  \"cep\": \"13180500\",\n  \"numero\": \"456\",\n  \"complemento\": \"Apartamento\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/12.5.0" }
+      ]
+    },
+    {
+      "url": "http://localhost:8000/cliente/4",
+      "name": "delet",
+      "method": "DELETE",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"João\",\n  \"cpf\": \"12345678909\",\n  \"cep\": \"13010000\",\n  \"numero\": \"123\",\n  \"complemento\": \"Casa\",\n  \"telefones\": [\n    \"11999999999\"\n  ]\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "User-Agent", "value": "insomnia/12.5.0" }
+      ]
+    }
+  ]
+}
